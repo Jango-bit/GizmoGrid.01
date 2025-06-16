@@ -1,0 +1,6 @@
+@GizmoGrid._01_HostAddress = http://localhost:5045
+
+GET {{GizmoGrid._01_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
