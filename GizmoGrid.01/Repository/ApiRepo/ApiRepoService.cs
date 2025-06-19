@@ -69,33 +69,29 @@ namespace GizmoGrid._01.Repository.ApiRepo
 
             return newNode.ApiTableNodesId;
         }
-        public async Task<Guid> AddApiEdgeAsync(Guid userId, Guid apiDiagramId, ApiEdgeCreateDto dto)
+        public async Task<ApiEdges> AddApiEdgeAsync(Guid userId, Guid apiDiagramId, ApiEdgeCreateDto dto)
         {
-            try
+            var diagram = await _codePlannerDbContext.ApiDiagrams
+                .FirstOrDefaultAsync(fd => fd.ApiDiagramId == apiDiagramId && fd.UserId == userId);
+
+            if (diagram == null)
+                throw new KeyNotFoundException("Diagram not found or access denied.");
+
+            var edge = new ApiEdges
             {
-                var apiDiagram = await _codePlannerDbContext.ApiDiagrams
-               .FirstOrDefaultAsync(fd => fd.ApiDiagramId == apiDiagramId && fd.UserId == userId);
+                ApiEdgesId = Guid.NewGuid(),
+                ApiDiagramId = apiDiagramId,
+                SourceId = dto.SourceId,
+                TargetId = dto.TargetId
+            };
 
-                if (apiDiagram == null)
-                    throw new KeyNotFoundException("Flow diagram not found or access denied.");
+            _codePlannerDbContext.ApiEdges.Add(edge);
+            await _codePlannerDbContext.SaveChangesAsync();
 
-                var edge = new ApiEdges
-                {
-                    ApiEdgesId = Guid.NewGuid(),
-                    ApiDiagramId = apiDiagramId,
-                    SourceId = dto.SourceId,
-                    TargetId = dto.TargetId,
-                };
-                _codePlannerDbContext.ApiEdges.Add(edge);
-                await _codePlannerDbContext.SaveChangesAsync();
-                return edge.ApiEdgesId;
-            }
-            catch (Exception ex)
-            {
-                throw new ApplicationException("Error adding edge.", ex);
-            }
-
+            return edge;
         }
+
+        
         public async Task<ApiTableNodes> UpdateApiNodeAsync(Guid userId, Guid apiDiagramId, ApiNodeUpdateDto dto)
         {
             var apiDiagram = await _codePlannerDbContext.ApiDiagrams
@@ -151,12 +147,17 @@ namespace GizmoGrid._01.Repository.ApiRepo
                 .Where(n => n.ApiDiagramId == apiDiagramId)
                 .ToListAsync();
         }
-
+        public async Task<List<ApiEdges>> GetApiEdgesByDiagramIdAsync(Guid apiDiagramId)
+        {
+            return await _codePlannerDbContext.ApiEdges
+                .Where(e => e.ApiDiagramId == apiDiagramId)
+                .ToListAsync();
+        }
     }
-
-
-
-
-
-
 }
+
+
+
+
+
+

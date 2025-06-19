@@ -10,6 +10,8 @@
         public Guid TargetId { get; set; }
 
         public TableNode SourceNode { get; set; }
-        public TableNode TargetNode { get; set; }   
+        public TableNode TargetNode { get; set; }
+
+
     }
 }

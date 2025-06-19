@@ -9,6 +9,8 @@
         public float PositionX { get; set; }
         public float PositionY { get; set; }
 
+        public ApiDiagram ApiDiagram { get; set; }
+
         public ICollection<ApiEdges>? IncomingEdges { get; set; } = new List<ApiEdges>();
         public ICollection<ApiEdges>? OutgoingEdges { get; set; } = new List<ApiEdges>();
 

@@ -60,37 +60,6 @@ namespace GizmoGrid._01.Controllers
                 return NotFound();
             }
         }
-
-        //[HttpPost("{flowDiagramId}/nodes")]
-        //public async Task<IActionResult> AddNode(Guid flowDiagramId, [FromForm] NodeCreateDto dto)
-        //{
-
-        //    try
-        //    {
-        //        var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
-        //        var nodeId = await _flowDiagramService.AddNodeAsync(userId, flowDiagramId, dto);
-        //        return Ok(new { Id = nodeId });
-        //    }
-        //    catch (KeyNotFoundException)
-        //    {
-        //        return NotFound();
-        //    }
-        //}
-
-        //[HttpPut("Updatenodes/{nodeId}")]
-        //public async Task<IActionResult> UpdateNode(Guid nodeId, [FromForm] NodeUpdateDto dto)
-        //{
-        //    try
-        //    {
-        //        var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
-        //        await _flowDiagramService.UpdateNodeAsync(userId, nodeId, dto);
-        //        return Ok("Updated!");
-        //    }
-        //    catch (KeyNotFoundException)
-        //    {
-        //        return NotFound();
-        //    }
-        //}
         [HttpPost("{flowDiagramId}/nodes")]
         public async Task<IActionResult> AddNode(Guid flowDiagramId, [FromForm] NodeCreateDto dto)
         {
@@ -125,35 +94,48 @@ namespace GizmoGrid._01.Controllers
             }
         }
 
+   
+
         [HttpPut("Updatenodes/{nodeId}")]
         public async Task<IActionResult> UpdateNode(Guid nodeId, [FromForm] NodeUpdateDto dto)
         {
             try
             {
-                var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+                var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? throw new Exception("User not authenticated"));
+
+                if (dto.FlowDiagramId == Guid.Empty)
+                    return BadRequest("FlowDiagramId is required");
+
                 await _flowDiagramService.UpdateNodeAsync(userId, nodeId, dto);
                 return Ok("Updated!");
+            }
+            catch (KeyNotFoundException knf)
+            {
+                return NotFound(knf.Message);
             }
             catch (Exception ex)
             {
                 return StatusCode(500, $"Error updating node: {ex.Message}");
             }
         }
-        [HttpDelete("Deletenodes/{nodeId}")]
-        public async Task<IActionResult> DeleteNode(Guid nodeId)
+        [HttpDelete("{flowDiagramId}/nodes/{nodeId}")]
+        public async Task<IActionResult> DeleteNode(Guid flowDiagramId, Guid nodeId)
         {
             try
             {
-                var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
-                await _flowDiagramService.DeleteNodeAsync(userId, nodeId);
-                return Ok("Deleted Succesfully");
+                var userId = Guid.Parse(HttpContext.Items["UserId"]?.ToString());
+                await _flowDiagramService.DeleteNodeAsync(userId, flowDiagramId, nodeId);
+                return NoContent(); // 204 Success
             }
-            catch (KeyNotFoundException)
+            catch (KeyNotFoundException ex)
             {
-                return NotFound();
+                return NotFound(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Internal server error: " + ex.Message);
             }
         }
-
 
         [HttpPost("{flowDiagramId}/edges")]
         public async Task<IActionResult> AddEdge(Guid flowDiagramId, [FromBody] EdgeCreateDto dto)

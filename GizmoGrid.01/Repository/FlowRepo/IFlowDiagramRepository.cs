@@ -10,8 +10,8 @@ namespace GizmoGrid._01.Repository.FlowRepo
         Task<Guid> AddNodeAsync(Guid userId, Guid flowDiagramId, NodeCreateDto dto, string imageUrl);
         Task<NodeDtoReturn> GetNodeByIdAsync(Guid userId, Guid nodeId);
         Task UpdateNodeAsync(Guid userId, Guid nodeId, NodeUpdateDto dto, string imageUrl);
-        Task DeleteNodeAsync(Guid userId, Guid nodeId);
-        Task<Edge> AddEdgeAsync(Guid userId, Guid flowDiagramId, EdgeCreateDto dto);
+        Task DeleteNodeAsync(Guid userId, Guid flowDiagramId, Guid nodeId);
+            Task<Edge> AddEdgeAsync(Guid userId, Guid flowDiagramId, EdgeCreateDto dto);
 
         Task<List<Edge>> GetEdgesByDiagramIdAsync(Guid userId, Guid diagramId);
 

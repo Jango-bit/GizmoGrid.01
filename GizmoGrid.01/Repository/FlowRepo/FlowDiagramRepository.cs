@@ -55,6 +55,7 @@ public class FlowDiagramRepository : IFlowDiagramRepository
     public async Task<FlowDiagramDtoReturn> GetFlowDiagramAsync(Guid userId, Guid flowDiagramId)
     {
         var dto = await _context.FlowDiagrams
+              .Include(fd => fd.Nodes) 
             .Where(fd => fd.Id == flowDiagramId && fd.UserId == userId)
             .Select(fd => new FlowDiagramDtoReturn
             {
@@ -72,6 +73,7 @@ public class FlowDiagramRepository : IFlowDiagramRepository
                         ImageUrl = n.Image,
                         PositionX = n.PositionX,
                         PositionY = n.PositionY
+                        ,ImageSize = n.ImageSize
                     })
                     .ToList()
             })
@@ -82,64 +84,7 @@ public class FlowDiagramRepository : IFlowDiagramRepository
 
         return dto;
     }
-    //public async Task<Guid> AddNodeAsync(Guid userId, Guid flowDiagramId, NodeCreateDto dto, string imageUrl)
-    //{
-    //    try
-    //    {
-    //        var flowDiagram = await _context.FlowDiagrams
-    //            .FirstOrDefaultAsync(fd => fd.Id == flowDiagramId && fd.UserId == userId);
-
-    //        if (flowDiagram == null)
-    //            throw new KeyNotFoundException("Flow diagram not found or access denied.");
-
-    //        var node = new Node
-    //        {
-    //            Id = Guid.NewGuid(),
-    //            FlowDiagramId = flowDiagramId,
-    //            Label = dto.Label,
-    //            Description = dto.Description,
-    //            Image = imageUrl,
-    //            ImageSize = dto.ImageSize,
-    //            PositionX = dto.PositionX,
-    //            PositionY = dto.PositionY
-    //        };
-
-    //        _context.Nodes.Add(node);
-    //        await _context.SaveChangesAsync();
-
-    //        return node.Id;
-    //    }
-    //    catch (Exception ex)
-    //    {
-    //        throw new ApplicationException("Error adding node.", ex);
-    //    }
-    //}
-
-    //public async Task UpdateNodeAsync(Guid userId, Guid nodeId, NodeUpdateDto dto, string imageUrl)
-    //{
-    //    try
-    //    {
-    //        var node = await _context.Nodes
-    //            .Include(n => n.FlowDiagram)
-    //            .FirstOrDefaultAsync(n => n.Id == nodeId && n.FlowDiagram.UserId == userId);
-
-    //        if (node == null)
-    //            throw new KeyNotFoundException("Node not found or access denied.");
-
-    //        node.Label = dto.Label ?? node.Label;
-    //        node.Description = dto.Description ?? node.Description;
-    //        node.Image = !string.IsNullOrEmpty(imageUrl) ? imageUrl : node.Image;
-    //        node.ImageSize = dto.ImageSize ?? node.ImageSize;
-    //        node.PositionX = dto.PositionX ?? node.PositionX;
-    //        node.PositionY = dto.PositionY ?? node.PositionY;
-
-    //        await _context.SaveChangesAsync();
-    //    }
-    //    catch (Exception ex)
-    //    {
-    //        throw new ApplicationException("Error updating node.", ex);
-    //    }
-    //}
+ 
     public async Task<Guid> AddNodeAsync(Guid userId, Guid flowDiagramId, NodeCreateDto dto, string imageUrl)
     {
         var flowDiagram = await _context.FlowDiagrams
@@ -169,7 +114,9 @@ public class FlowDiagramRepository : IFlowDiagramRepository
     {
         var node = await _context.Nodes
             .Include(n => n.FlowDiagram)
-            .FirstOrDefaultAsync(n => n.Id == nodeId && n.FlowDiagram.UserId == userId);
+            .FirstOrDefaultAsync(n => n.Id == nodeId &&
+                                      n.FlowDiagramId == dto.FlowDiagramId &&
+                                      n.FlowDiagram.UserId == userId);
 
         if (node == null)
             throw new KeyNotFoundException("Node not found or access denied.");
@@ -178,24 +125,35 @@ public class FlowDiagramRepository : IFlowDiagramRepository
         node.Description = dto.Description ?? node.Description;
         node.Image = !string.IsNullOrEmpty(imageUrl) ? imageUrl : node.Image;
         node.ImageSize = dto.ImageSize ?? node.ImageSize;
-        node.PositionX = (float)(dto.PositionX ?? node.PositionX);
-        node.PositionY = (float)(dto.PositionY ?? node.PositionY);
+        node.PositionX = dto.PositionX ?? node.PositionX;
+        node.PositionY = dto.PositionY ?? node.PositionY;
 
         await _context.SaveChangesAsync();
     }
 
-    public async Task DeleteNodeAsync(Guid userId, Guid nodeId)
+    public async Task DeleteNodeAsync(Guid userId, Guid flowDiagramId, Guid nodeId)
     {
         try
         {
             var node = await _context.Nodes
                 .Include(n => n.FlowDiagram)
-                .FirstOrDefaultAsync(n => n.Id == nodeId && n.FlowDiagram.UserId == userId);
+                .FirstOrDefaultAsync(n =>
+                    n.Id == nodeId &&
+                    n.FlowDiagramId == flowDiagramId &&
+                    n.FlowDiagram.UserId == userId
+                );
 
             if (node == null)
                 throw new KeyNotFoundException("Node not found or access denied.");
 
-            _context.Nodes.Remove(node);
+            // 💥 Delete related edges (both where this node is source or target)
+            var relatedEdges = await _context.Edges
+                .Where(e => e.SourceId == nodeId || e.TargetId == nodeId)
+                .ToListAsync();
+
+            _context.Edges.RemoveRange(relatedEdges); // remove edges first ✅
+            _context.Nodes.Remove(node);              // then remove node ✅
+
             await _context.SaveChangesAsync();
         }
         catch (Exception ex)

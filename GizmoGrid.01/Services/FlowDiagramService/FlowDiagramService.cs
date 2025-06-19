@@ -48,22 +48,25 @@ namespace GizmoGrid._01.Services.FlowDiagramService
             return await _flowDiagramRepository.AddNodeAsync(userId, flowDiagramId, dto, imageResult.Url);
         }
 
+    
+
         public async Task UpdateNodeAsync(Guid userId, Guid nodeId, NodeUpdateDto dto)
         {
             string imageUrl = null;
+
             if (dto.Image != null)
             {
                 var imageResult = await _imageUploader.UploadImage(dto.Image);
                 imageUrl = imageResult.Url;
                 dto.ImageSize = dto.ImageSize ?? imageResult.ImageSize;
             }
+
             await _flowDiagramRepository.UpdateNodeAsync(userId, nodeId, dto, imageUrl);
         }
-        public async Task DeleteNodeAsync(Guid userId, Guid nodeId)
+        public async Task DeleteNodeAsync(Guid userId, Guid flowDiagramId, Guid nodeId)
         {
-            await _flowDiagramRepository.DeleteNodeAsync(userId, nodeId);
+            await _flowDiagramRepository.DeleteNodeAsync(userId, flowDiagramId, nodeId);
         }
-
         public async Task<Edge> AddEdgeAsync(Guid userId, Guid flowDiagramId, EdgeCreateDto dto)
         {
             return await _flowDiagramRepository.AddEdgeAsync(userId, flowDiagramId, dto);

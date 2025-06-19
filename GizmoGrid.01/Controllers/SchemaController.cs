@@ -1,9 +1,11 @@
 ﻿using System.Security.Claims;
+using GizmoGrid._01.Data;
 using GizmoGrid._01.Dto.SchemaDto;
 using GizmoGrid._01.Entity;
 using GizmoGrid._01.Services.SchemaServices;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace GizmoGrid._01.Controllers
 {
@@ -12,9 +14,11 @@ namespace GizmoGrid._01.Controllers
     public class SchemaController : ControllerBase
     {
         private readonly ISchemaInterface _schemaInterface;
-        public SchemaController(ISchemaInterface schemaInterface)
+        private readonly CodePlannerDbContext _codePlannerDbContext;
+        public SchemaController(ISchemaInterface schemaInterface,CodePlannerDbContext codePlannerDbContext)
         {
             _schemaInterface = schemaInterface;
+            _codePlannerDbContext = codePlannerDbContext;   
         }
         [HttpPost("CreateSchemaDiagram")]
         public async Task<IActionResult> CreateSchema([FromBody] SchemaDiagramCreateDto dto)
@@ -157,6 +161,44 @@ namespace GizmoGrid._01.Controllers
             var nodes = await _schemaInterface.GetTableNodesWithColumnsAsync(schemaDiagramId);
             return Ok(nodes);
         }
+        [HttpGet("{schemaDiagramId}/edges")]
+        public async Task<IActionResult> GetTableEdges(Guid schemaDiagramId)
+        {
+            try
+            {
+                var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+                var edges = await _schemaInterface.GetTableEdgesAsync(userId, schemaDiagramId);
+                return Ok(edges);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+        }
+        [HttpPut("{schemaDiagramId}/nodes/{nodeId}/position")]
+        public async Task<IActionResult> UpdateNodePosition(Guid schemaDiagramId, Guid nodeId, [FromBody] Tableposition dto)
+        {
+            try
+            {
+                var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
 
+                var node = await _codePlannerDbContext.TableNodes
+                    .Include(n => n.SchemaDiagram)
+                    .FirstOrDefaultAsync(n => n.TableNodeId == nodeId && n.SchemaDiagramId == schemaDiagramId && n.SchemaDiagram.UserId == userId);
+
+                if (node == null)
+                    return NotFound("Node not found or access denied.");
+
+                node.PositionX = dto.PositionX;
+                node.PositionY = dto.PositionY;
+
+                await _codePlannerDbContext.SaveChangesAsync();
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error updating position: {ex.Message}");
+            }
+        }
     }
 }

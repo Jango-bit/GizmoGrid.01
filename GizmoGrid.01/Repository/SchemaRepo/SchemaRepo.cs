@@ -116,7 +116,7 @@ namespace GizmoGrid._01.Repository.SchemaRepo
 
 
 
-        public async Task<List<Guid>> AddEdgeAsync(Guid userId, Guid schemaDiagramId, List<TableEdgeCreateDto> edges)
+        public async Task<List<TableEdgeDtoReturn>> AddEdgeAsync(Guid userId, Guid schemaDiagramId, List<TableEdgeCreateDto> edges)
         {
             try
             {
@@ -126,7 +126,7 @@ namespace GizmoGrid._01.Repository.SchemaRepo
                 if (schemaDiagram == null)
                     throw new KeyNotFoundException("Schema diagram not found or access denied.");
 
-                var createdEdgeIds = new List<Guid>();
+                var createdEdges = new List<TableEdgeDtoReturn>();
 
                 foreach (var dto in edges)
                 {
@@ -141,18 +141,23 @@ namespace GizmoGrid._01.Repository.SchemaRepo
                     };
 
                     _codePlannerDbContext.TableEdges.Add(tableEdge);
-                    createdEdgeIds.Add(edgeId);
+
+                    createdEdges.Add(new TableEdgeDtoReturn
+                    {
+                        EdgeId = edgeId,
+                        SourceId = dto.SourceId,
+                        TargetId = dto.TargetId
+                    });
                 }
 
                 await _codePlannerDbContext.SaveChangesAsync();
-                return createdEdgeIds;
+                return createdEdges;
             }
             catch (Exception ex)
             {
                 throw new ApplicationException("Error adding edges to schema diagram.", ex);
             }
         }
-
         public async Task UpdateTableNodeAsync(Guid userId, Guid tableNodeId, TableNodeUpdateDto dto)
         {
             var tableNode = await _codePlannerDbContext.TableNodes
@@ -255,5 +260,23 @@ namespace GizmoGrid._01.Repository.SchemaRepo
                 .ToListAsync();
         }
 
+        public async Task<List<TableEdgeDtoReturn>> GetTableEdgesAsync(Guid userId, Guid schemaDiagramId)
+        {
+            var diagram = await _codePlannerDbContext.SchemaDiagrams
+                .FirstOrDefaultAsync(d => d.SchemaDiagramId == schemaDiagramId && d.UserId == userId);
+
+            if (diagram == null)
+                throw new KeyNotFoundException("Schema not found or access denied.");
+
+            return await _codePlannerDbContext.TableEdges
+                .Where(e => e.SchemaDiagramId == schemaDiagramId)
+                .Select(e => new TableEdgeDtoReturn
+                {
+                    EdgeId = e.EdgeId,
+                    SourceId = e.SourceId,
+                    TargetId = e.TargetId
+                })
+                .ToListAsync();
+        }
     }
 }

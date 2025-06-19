@@ -126,12 +126,11 @@ namespace GizmoGrid._01.Data
                 .HasForeignKey(a => a.UserId)
                 .OnDelete(DeleteBehavior.Restrict); // prevent cascade loop if deleting user
 
-            // ApiDiagram → ApiTableNodes (1:N)
             modelBuilder.Entity<ApiDiagram>()
-                .HasMany(a => a.ApiTableNodes)
-                .WithOne()
-                .HasForeignKey("ApiDiagramId") // shadow property
-                .OnDelete(DeleteBehavior.Cascade);
+       .HasMany(a => a.ApiTableNodes)
+       .WithOne(n => n.ApiDiagram) // ✅ link the nav property
+       .HasForeignKey(n => n.ApiDiagramId) // ✅ no quotes — use the real property
+       .OnDelete(DeleteBehavior.Cascade);
 
             // ApiDiagram → ApiEdges (1:N)
             modelBuilder.Entity<ApiDiagram>()

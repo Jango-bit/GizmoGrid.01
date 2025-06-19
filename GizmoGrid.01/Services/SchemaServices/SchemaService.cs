@@ -56,7 +56,7 @@ namespace GizmoGrid._01.Services.SchemaServices
         }
 
 
-        public async Task<List<Guid>> CreateTableEdgesAsync(Guid userId, Guid schemaDiagramId, List<TableEdgeCreateDto> edges)
+        public async Task<List<TableEdgeDtoReturn>> CreateTableEdgesAsync(Guid userId, Guid schemaDiagramId, List<TableEdgeCreateDto> edges)
         {
             try
             {
@@ -66,6 +66,7 @@ namespace GizmoGrid._01.Services.SchemaServices
             {
                 throw new ApplicationException("Error creating table edges in service layer.", ex);
             }
+        
         }
         public async Task UpdateTableNodeAsync(Guid userId, Guid tableNodeId, TableNodeUpdateDto dto)
         {
@@ -114,6 +115,10 @@ namespace GizmoGrid._01.Services.SchemaServices
                 }).ToList()
             }).ToList();
 
+        }
+        public async Task<List<TableEdgeDtoReturn>> GetTableEdgesAsync(Guid userId, Guid schemaDiagramId)
+        {
+            return await _schemaRepo.GetTableEdgesAsync(userId, schemaDiagramId);
         }
     }
 }

@@ -1,10 +1,12 @@
 ﻿using System.Security.Claims;
+using GizmoGrid._01.Data;
 using GizmoGrid._01.Dto;
 using GizmoGrid._01.Dto.ApiCreateDto;
 using GizmoGrid._01.Entity;
 using GizmoGrid._01.Services.ApiServices;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace GizmoGrid._01.Controllers
 {
@@ -13,9 +15,11 @@ namespace GizmoGrid._01.Controllers
     public class ApiDiagramController : ControllerBase
     {
         private readonly IApidiagramInterface _aidiagramInterface;
-        public ApiDiagramController(IApidiagramInterface aidiagramInterface)
+        private readonly CodePlannerDbContext _codePlannerDbContext;    
+        public ApiDiagramController(IApidiagramInterface aidiagramInterface , CodePlannerDbContext codePlannerDbContext)
         {
             _aidiagramInterface = aidiagramInterface;
+            _codePlannerDbContext = codePlannerDbContext;
         }
         [HttpPost("CREATE APIdIAGRAM")]
 
@@ -58,9 +62,9 @@ namespace GizmoGrid._01.Controllers
             {
                 var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value!);
 
-                var edgeId = await _aidiagramInterface.AddApiEdgeAsync(userId, apiDiagramId, dto);
+                var result = await _aidiagramInterface.AddApiEdgeAsync(userId, apiDiagramId, dto);
 
-                return Ok(new { Id = edgeId });
+                return Ok(result);
             }
             catch (KeyNotFoundException ex)
             {
@@ -118,5 +122,52 @@ namespace GizmoGrid._01.Controllers
             var nodes = await _aidiagramInterface.GetApiNodesAsync(apiDiagramId);
             return Ok(nodes);
         }
+
+        [HttpGet("GetEdges")]
+        public async Task<IActionResult> GetApiEdges(Guid apiDiagramId)
+        {
+            try
+            {
+                var result = await _aidiagramInterface.GetApiEdgesByDiagramIdAsync(apiDiagramId);
+                return Ok(result);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error retrieving edges: {ex.Message}");
+            }
+        }
+        [HttpPut("{apiDiagramId}/nodes/{nodeId}/position")]
+        public async Task<IActionResult> UpdateNodePosition(Guid apiDiagramId, Guid nodeId, [FromBody] UpdateNodePositionDto dto)
+        {
+            try
+            {
+                var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+
+                var node = await _codePlannerDbContext.ApiTableNodes
+                    .Include(n => n.ApiDiagram)
+                    .FirstOrDefaultAsync(n =>
+                        n.ApiTableNodesId == nodeId &&
+                        n.ApiDiagramId == apiDiagramId &&
+                        n.ApiDiagram.UserId == userId);
+
+                if (node == null)
+                    return NotFound("Node not found or access denied.");
+
+                node.PositionX = dto.PositionX;
+                node.PositionY = dto.PositionY;
+
+                await _codePlannerDbContext.SaveChangesAsync();
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error updating position: {ex.Message}");
+            }
+        }
     }
+    
 }

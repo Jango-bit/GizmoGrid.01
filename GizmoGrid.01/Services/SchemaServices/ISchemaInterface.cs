@@ -7,10 +7,11 @@ namespace GizmoGrid._01.Services.SchemaServices
     {
         Task<Guid> CreateSchemaDiagramAsync(Guid userId, SchemaDiagramCreateDto dto);
         Task AddTableColumnsBulkAsync(Guid userId, Guid tableNodeId, List<TableColumnCreateDto> columnDtos);
-            Task<List<Guid>> CreateTableEdgesAsync(Guid userId, Guid schemaDiagramId, List<TableEdgeCreateDto> edges);
+            Task<List<TableEdgeDtoReturn>> CreateTableEdgesAsync(Guid userId, Guid schemaDiagramId, List<TableEdgeCreateDto> edges);
         Task UpdateTableNodeAsync(Guid userId, Guid tableNodeId, TableNodeUpdateDto dto);
         Task DeleteTableNodeAsync(Guid userId, Guid tableNodeId);
         Task<List<TableNodeDtoReturn>> CreateTableNodesAsync(Guid schemaDiagramId, List<TableNodeCreateDto> tableNodes, Guid userId);
         Task<List<TableNodeDtoReturn>> GetTableNodesWithColumnsAsync(Guid schemaDiagramId);
+        Task<List<TableEdgeDtoReturn>> GetTableEdgesAsync(Guid userId, Guid schemaDiagramId);
     }
 }

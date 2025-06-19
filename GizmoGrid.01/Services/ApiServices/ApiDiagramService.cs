@@ -20,10 +20,18 @@ namespace GizmoGrid._01.Services.ApiServices
             return await _repoInterface.AddApiNodeAsync(userId, apiDiagramId, dto);
         }
 
-        public async Task<Guid> AddApiEdgeAsync(Guid userId, Guid apiDiagramId, ApiEdgeCreateDto dto)
+        public async Task<ApiEdgeReturnDto> AddApiEdgeAsync(Guid userId, Guid apiDiagramId, ApiEdgeCreateDto dto)
         {
-            return await _repoInterface.AddApiEdgeAsync(userId, apiDiagramId, dto);
+            var edge = await _repoInterface.AddApiEdgeAsync(userId, apiDiagramId, dto);
+
+            return new ApiEdgeReturnDto
+            {
+                Id = edge.ApiEdgesId,
+                SourceId = edge.SourceId,
+                TargetId = edge.TargetId
+            };
         }
+
         public async Task<ApiTableNodes> UpdateApiNodeAsync(Guid userId, Guid apiDiagramId, ApiNodeUpdateDto dto)
         {
             return await _repoInterface.UpdateApiNodeAsync(userId, apiDiagramId, dto);
@@ -45,5 +53,17 @@ namespace GizmoGrid._01.Services.ApiServices
                 PositionY = n.PositionY
             }).ToList();
         }
+        public async Task<List<ApiEdgeReturnDto>> GetApiEdgesByDiagramIdAsync(Guid apiDiagramId)
+        {
+            var edges = await _repoInterface.GetApiEdgesByDiagramIdAsync(apiDiagramId);
+
+            return edges.Select(e => new ApiEdgeReturnDto
+            {
+                Id = e.ApiEdgesId,
+                SourceId = e.SourceId,
+                TargetId = e.TargetId
+            }).ToList();
+        }
+
     }
 }
