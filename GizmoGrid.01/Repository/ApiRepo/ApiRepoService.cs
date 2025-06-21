@@ -91,8 +91,31 @@ namespace GizmoGrid._01.Repository.ApiRepo
             return edge;
         }
 
-        
-        public async Task<ApiTableNodes> UpdateApiNodeAsync(Guid userId, Guid apiDiagramId, ApiNodeUpdateDto dto)
+
+        //public async Task<ApiTableNodes> UpdateApiNodeAsync(Guid userId, Guid apiDiagramId, ApiNodeUpdateDto dto)
+        //{
+        //    var apiDiagram = await _codePlannerDbContext.ApiDiagrams
+        //        .Include(d => d.ApiTableNodes)
+        //        .FirstOrDefaultAsync(d => d.ApiDiagramId == apiDiagramId && d.UserId == userId);
+
+        //    if (apiDiagram == null)
+        //        throw new KeyNotFoundException("API diagram not found or access denied.");
+
+        //    var node = apiDiagram.ApiTableNodes.FirstOrDefault(n => n.ApiTableNodesId == dto.ApiTableNodesId);
+
+        //    if (node == null)
+        //        throw new KeyNotFoundException("Node not found.");
+
+        //    node.Name = dto.Name;
+        //    node.Description = dto.Description;
+        //    node.PositionX = dto.PositionX;
+        //    node.PositionY = dto.PositionY;
+
+        //    await _codePlannerDbContext.SaveChangesAsync();
+
+        //    return node;
+        //}
+        public async Task<ApiNodeReturnDto> UpdateApiNodeAsync(Guid userId, Guid apiDiagramId, ApiNodeUpdateDto dto)
         {
             var apiDiagram = await _codePlannerDbContext.ApiDiagrams
                 .Include(d => d.ApiTableNodes)
@@ -102,7 +125,6 @@ namespace GizmoGrid._01.Repository.ApiRepo
                 throw new KeyNotFoundException("API diagram not found or access denied.");
 
             var node = apiDiagram.ApiTableNodes.FirstOrDefault(n => n.ApiTableNodesId == dto.ApiTableNodesId);
-
             if (node == null)
                 throw new KeyNotFoundException("Node not found.");
 
@@ -113,7 +135,14 @@ namespace GizmoGrid._01.Repository.ApiRepo
 
             await _codePlannerDbContext.SaveChangesAsync();
 
-            return node;
+            return new ApiNodeReturnDto
+            {
+                ApiTableNodesId = node.ApiTableNodesId,
+                Name = node.Name,
+                Description = node.Description,
+                PositionX = node.PositionX,
+                PositionY = node.PositionY
+            };
         }
         public async Task<bool> DeleteApiNodeAsync(Guid userId, Guid apiDiagramId, Guid apiTableNodeId)
         {

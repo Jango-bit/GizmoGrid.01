@@ -32,10 +32,8 @@ namespace GizmoGrid._01.Services.ApiServices
             };
         }
 
-        public async Task<ApiTableNodes> UpdateApiNodeAsync(Guid userId, Guid apiDiagramId, ApiNodeUpdateDto dto)
-        {
-            return await _repoInterface.UpdateApiNodeAsync(userId, apiDiagramId, dto);
-        }
+        public Task<ApiNodeReturnDto> UpdateApiNodeAsync(Guid userId, Guid apiDiagramId, ApiNodeUpdateDto dto) =>
+       _repoInterface.UpdateApiNodeAsync(userId, apiDiagramId, dto);
         public async Task<bool> DeleteApiNodeAsync(Guid userId, Guid apiDiagramId, Guid apiTableNodeId)
         {
             return await _repoInterface.DeleteApiNodeAsync(userId, apiDiagramId, apiTableNodeId);

@@ -87,7 +87,7 @@ namespace GizmoGrid._01.Data
     .HasMany(t=>t.TableNodes)
     .WithOne(t => t.SchemaDiagram)
     .HasForeignKey(t => t.SchemaDiagramId)
-    .OnDelete(DeleteBehavior.Cascade);
+    .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<TableNode>()
     .HasMany(t => t.Columns)
@@ -162,6 +162,11 @@ namespace GizmoGrid._01.Data
                 .HasForeignKey(e => e.TargetId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            modelBuilder.Entity<SchemaDiagram>()
+    .HasOne<Project>()
+    .WithMany()
+    .HasForeignKey(sd => sd.ProjectId)
+    .OnDelete(DeleteBehavior.Restrict); // ❌ THIS IS STILL THE PROBLEM
 
 
         }

@@ -107,9 +107,6 @@ namespace GizmoGrid._01.Controllers
                 return Unauthorized(new { message = "User is not authenticated." });
 
             var userId = Guid.Parse(userIdClaim);
-
-
-
             try
             {
                 await _schemaInterface.UpdateTableNodeAsync(userId, tableNodeId, dto);
