@@ -75,23 +75,7 @@ namespace GizmoGrid._01.Controllers
                 return StatusCode(500, $"Error creating edge: {ex.Message}");
             }
         }
-        //[HttpPut("{apiDiagramId}/nodes")]
-        //public async Task<IActionResult> UpdateApiNode(Guid apiDiagramId, [FromBody] ApiNodeUpdateDto dto)
-        //{
-        //    try
-        //    {
-        //        var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value!);
-        //        var updatedNode = await _aidiagramInterface.UpdateApiNodeAsync(userId, apiDiagramId, dto);
-        //        return Ok(updatedNode);
-        //    }
-        //    catch (KeyNotFoundException ex)
-        //    {
-        //        return NotFound(ex.Message);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return StatusCode(500, $"Error updating node: {ex.Message}");
-        //    }
+   
         [HttpPut("{apiDiagramId}/nodes")]
         public async Task<IActionResult> UpdateApiNode(Guid apiDiagramId, [FromBody] ApiNodeUpdateDto dto)
         {

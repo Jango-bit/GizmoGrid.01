@@ -4,6 +4,7 @@ using GizmoGrid._01.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace GizmoGrid._01.Migrations
 {
     [DbContext(typeof(CodePlannerDbContext))]
-    partial class CodePlannerDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250622202207_addednewthings1")]
+    partial class addednewthings1
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -217,9 +220,6 @@ namespace GizmoGrid._01.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -227,12 +227,6 @@ namespace GizmoGrid._01.Migrations
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid?>("UpdatedByUserId")
-                        .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("UserId")
                         .HasColumnType("uniqueidentifier");
@@ -242,42 +236,6 @@ namespace GizmoGrid._01.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("Projects");
-                });
-
-            modelBuilder.Entity("GizmoGrid._01.Entity.Projectaccces.ProjectAccess", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("ProjectId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ProjectId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("ProjectAccesses");
-                });
-
-            modelBuilder.Entity("GizmoGrid._01.Entity.Projectaccces.ProjectMember", b =>
-                {
-                    b.Property<Guid>("ProjectId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("ProjectId", "UserId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("ProjectMember");
                 });
 
             modelBuilder.Entity("GizmoGrid._01.Entity.SchemaEntity.SchemaDiagram", b =>
@@ -296,6 +254,9 @@ namespace GizmoGrid._01.Migrations
                     b.Property<Guid>("ProjectId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<Guid?>("ProjectId1")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime2");
 
@@ -305,6 +266,8 @@ namespace GizmoGrid._01.Migrations
                     b.HasKey("SchemaDiagramId");
 
                     b.HasIndex("ProjectId");
+
+                    b.HasIndex("ProjectId1");
 
                     b.HasIndex("UserId");
 
@@ -571,59 +534,23 @@ namespace GizmoGrid._01.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("GizmoGrid._01.Entity.Projectaccces.ProjectAccess", b =>
-                {
-                    b.HasOne("GizmoGrid._01.Entity.Project", "Project")
-                        .WithMany("ProjectAccesses")
-                        .HasForeignKey("ProjectId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("GizmoGrid._01.Entity.User", "User")
-                        .WithMany("ProjectAccesses")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Project");
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("GizmoGrid._01.Entity.Projectaccces.ProjectMember", b =>
-                {
-                    b.HasOne("GizmoGrid._01.Entity.Project", "Project")
-                        .WithMany("ProjectMembers")
-                        .HasForeignKey("ProjectId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("GizmoGrid._01.Entity.User", "User")
-                        .WithMany("ProjectMembers")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Project");
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("GizmoGrid._01.Entity.SchemaEntity.SchemaDiagram", b =>
                 {
-                    b.HasOne("GizmoGrid._01.Entity.Project", "Project")
-                        .WithMany("SchemaDiagrams")
+                    b.HasOne("GizmoGrid._01.Entity.Project", null)
+                        .WithMany()
                         .HasForeignKey("ProjectId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.HasOne("GizmoGrid._01.Entity.Project", null)
+                        .WithMany("SchemaDiagrams")
+                        .HasForeignKey("ProjectId1");
 
                     b.HasOne("GizmoGrid._01.Entity.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Project");
 
                     b.Navigation("User");
                 });
@@ -649,7 +576,7 @@ namespace GizmoGrid._01.Migrations
             modelBuilder.Entity("GizmoGrid._01.Entity.SchemaEntity.TableEdges", b =>
                 {
                     b.HasOne("GizmoGrid._01.Entity.SchemaEntity.SchemaDiagram", "SchemaDiagram")
-                        .WithMany("TableEdges")
+                        .WithMany()
                         .HasForeignKey("SchemaDiagramId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -718,17 +645,11 @@ namespace GizmoGrid._01.Migrations
 
                     b.Navigation("FlowDiagrams");
 
-                    b.Navigation("ProjectAccesses");
-
-                    b.Navigation("ProjectMembers");
-
                     b.Navigation("SchemaDiagrams");
                 });
 
             modelBuilder.Entity("GizmoGrid._01.Entity.SchemaEntity.SchemaDiagram", b =>
                 {
-                    b.Navigation("TableEdges");
-
                     b.Navigation("TableNodes");
                 });
 
@@ -743,10 +664,6 @@ namespace GizmoGrid._01.Migrations
 
             modelBuilder.Entity("GizmoGrid._01.Entity.User", b =>
                 {
-                    b.Navigation("ProjectAccesses");
-
-                    b.Navigation("ProjectMembers");
-
                     b.Navigation("Projects");
                 });
 #pragma warning restore 612, 618

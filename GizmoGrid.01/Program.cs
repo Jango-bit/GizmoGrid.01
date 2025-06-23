@@ -7,6 +7,7 @@ using GizmoGrid._01.Repository.SchemaRepo;
 using GizmoGrid._01.Services;
 using GizmoGrid._01.Services.ApiServices;
 using GizmoGrid._01.Services.AuthServices;
+using GizmoGrid._01.Services.EmailService;
 using GizmoGrid._01.Services.FlowDiagramService;
 using GizmoGrid._01.Services.ImageUploader;
 using GizmoGrid._01.Services.ProjectService;
@@ -34,7 +35,10 @@ builder.Services.AddScoped<IFlowDiagramRepository, FlowDiagramRepository>();
 builder.Services.AddScoped<ISchemaRepo, SchemaRepo>();
 builder.Services.AddScoped<ISchemaInterface, SchemaService>();
 builder.Services.AddScoped<IApiRepoInterface, ApiRepoService>();
-builder.Services.AddScoped<IApidiagramInterface,ApiDiagramService>();
+builder.Services.AddScoped<IApidiagramInterface, ApiDiagramService>();
+builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddScoped<IProjectInviteService, ProjectInviteService>();
+
 
 
 // Swagger with JWT Bearer auth config

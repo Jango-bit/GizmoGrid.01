@@ -4,6 +4,8 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
+using GizmoGrid._01.Dto.ProjectDto;
+using GizmoGrid._01.Services.EmailService;
 
 namespace GizmoGrid._01.Controllers
 {
@@ -12,10 +14,15 @@ namespace GizmoGrid._01.Controllers
     public class ProjectsController : ControllerBase
     {
         private readonly IProjectService _projectService;
+        private readonly IEmailService _emailService;
+        private readonly IProjectInviteService _inviteService;
 
-        public ProjectsController(IProjectService projectService)
+
+        public ProjectsController(IProjectService projectService,IEmailService emailService, IProjectInviteService inviteService)
         {
             _projectService = projectService;
+            _emailService = emailService;
+            _inviteService= inviteService;
         }
         [Authorize]
         [HttpPost]
@@ -91,6 +98,38 @@ namespace GizmoGrid._01.Controllers
                 return NotFound();
             }
         }
+        [HttpGet("designs")]
+        public async Task<IActionResult> GetMyProjectsWithDesigns()
+        {
+            var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value!);
+            var result = await _projectService.GetProjectsWithDesignsByUserIdAsync(userId);
+            return Ok(result);
+        }
+        [HttpPost("{id:guid}/invite")]
+        public async Task<IActionResult> InviteToProject(Guid id, [FromBody] InviteDto dto)
+        {
+            if (dto == null)
+                return BadRequest("Request body is missing.");
+
+            if (string.IsNullOrWhiteSpace(dto.Email))
+                return BadRequest("Invitee email is required.");
+
+            var ownerIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (ownerIdStr == null || !Guid.TryParse(ownerIdStr, out var ownerId))
+                return Unauthorized("Invalid user ID.");
+
+            // Now safe to call service
+            await _inviteService.InviteAsync(id, ownerId, dto.Email);
+            return Ok(new { message = $"Invitation sent to {dto.Email}" });
+        }
+
+        [HttpPost("join")]
+        public async Task<IActionResult> JoinProject([FromBody] JoinDto dto)
+        {
+            var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+            await _projectService.AddUserToProject(userId, dto.ProjectId);
+            return Ok("Joined project successfully!");
+        }
+
     }
 }
-

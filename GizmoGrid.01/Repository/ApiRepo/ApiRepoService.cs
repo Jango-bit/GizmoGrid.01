@@ -30,6 +30,7 @@ namespace GizmoGrid._01.Repository.ApiRepo
                 var ApiDiagram = new ApiDiagram
                 {
                     ApiDiagramId = Guid.NewGuid(),
+                    Name= dto.Name, 
                     ProjectId = dto.ProjectId,
                     UserId = userId,
                     CreatedAt = DateTime.UtcNow,

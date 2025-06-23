@@ -26,6 +26,7 @@ namespace GizmoGrid._01.Repository.SchemaRepo
                 var schemaDiagram = new SchemaDiagram
                 {
                     SchemaDiagramId = Guid.NewGuid(),
+                    Name = dto.Name,    
                     ProjectId = dto.ProjectId,
                     UserId = UserId,
                     CreatedAt = DateTime.UtcNow,
