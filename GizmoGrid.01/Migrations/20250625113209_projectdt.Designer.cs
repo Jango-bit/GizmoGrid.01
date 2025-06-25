@@ -4,6 +4,7 @@ using GizmoGrid._01.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace GizmoGrid._01.Migrations
 {
     [DbContext(typeof(CodePlannerDbContext))]
-    partial class CodePlannerDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250625113209_projectdt")]
+    partial class projectdt
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -453,7 +456,7 @@ namespace GizmoGrid._01.Migrations
                     b.HasOne("GizmoGrid._01.Entity.Project", "Project")
                         .WithMany("ApiDiagrams")
                         .HasForeignKey("ProjectId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("GizmoGrid._01.Entity.User", "User")
@@ -537,7 +540,7 @@ namespace GizmoGrid._01.Migrations
                     b.HasOne("GizmoGrid._01.Entity.Project", "Project")
                         .WithMany("FlowDiagrams")
                         .HasForeignKey("ProjectId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("GizmoGrid._01.Entity.User", "User")
@@ -567,7 +570,7 @@ namespace GizmoGrid._01.Migrations
                     b.HasOne("GizmoGrid._01.Entity.User", "User")
                         .WithMany("Projects")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("User");
@@ -616,7 +619,7 @@ namespace GizmoGrid._01.Migrations
                     b.HasOne("GizmoGrid._01.Entity.Project", "Project")
                         .WithMany("SchemaDiagrams")
                         .HasForeignKey("ProjectId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("GizmoGrid._01.Entity.User", "User")

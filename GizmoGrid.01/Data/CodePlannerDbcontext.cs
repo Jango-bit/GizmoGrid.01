@@ -39,39 +39,41 @@ namespace GizmoGrid._01.Data
                 .HasIndex(u => u.Email)
                 .IsUnique();
 
-            // Project → User
+            //
+            // PROJECT → USER
+            //
             modelBuilder.Entity<Project>()
                 .HasOne(p => p.User)
                 .WithMany(u => u.Projects)
                 .HasForeignKey(p => p.UserId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .OnDelete(DeleteBehavior.Restrict); // OK
 
-            // FlowDiagram → Project
+            //
+            // FLOW DIAGRAM
+            //
             modelBuilder.Entity<FlowDiagram>()
                 .HasOne(fd => fd.Project)
                 .WithMany(p => p.FlowDiagrams)
                 .HasForeignKey(fd => fd.ProjectId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .OnDelete(DeleteBehavior.Cascade); // OK
 
-            // FlowDiagram → User
             modelBuilder.Entity<FlowDiagram>()
                 .HasOne(fd => fd.User)
                 .WithMany()
                 .HasForeignKey(fd => fd.UserId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.Restrict); // ✅ FIXED - was Cascade
 
-            // Node → FlowDiagram
             modelBuilder.Entity<Node>()
                 .HasOne(n => n.FlowDiagram)
                 .WithMany(fd => fd.Nodes)
-                .HasForeignKey(n => n.FlowDiagramId);
+                .HasForeignKey(n => n.FlowDiagramId)
+                .OnDelete(DeleteBehavior.Cascade);
 
-            // Edge Source/Target
             modelBuilder.Entity<Edge>()
                 .HasOne(e => e.SourceNode)
                 .WithMany(n => n.OutgoingEdges)
                 .HasForeignKey(e => e.SourceId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.Restrict); // ✅ FIXED - was Cascade
 
             modelBuilder.Entity<Edge>()
                 .HasOne(e => e.TargetNode)
@@ -91,19 +93,20 @@ namespace GizmoGrid._01.Data
                 entity.Property(e => e.TargetHandle).IsRequired();
             });
 
-            // SchemaDiagram → TableNodes
-            modelBuilder.Entity<SchemaDiagram>()
-                .HasMany(sd => sd.TableNodes)
-                .WithOne(t => t.SchemaDiagram)
-                .HasForeignKey(t => t.SchemaDiagramId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            // ✅ SchemaDiagram → Project (Fix)
+            //
+            // SCHEMA DIAGRAM
+            //
             modelBuilder.Entity<SchemaDiagram>()
                 .HasOne(sd => sd.Project)
                 .WithMany(p => p.SchemaDiagrams)
                 .HasForeignKey(sd => sd.ProjectId)
-                .OnDelete(DeleteBehavior.Restrict); // or Restrict if preferred
+                .OnDelete(DeleteBehavior.Cascade); // ✅ FIXED - was Cascade
+
+            modelBuilder.Entity<SchemaDiagram>()
+                .HasMany(sd => sd.TableNodes)
+                .WithOne(t => t.SchemaDiagram)
+                .HasForeignKey(t => t.SchemaDiagramId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<TableNode>()
                 .HasMany(t => t.Columns)
@@ -132,7 +135,15 @@ namespace GizmoGrid._01.Data
                 .HasForeignKey(c => c.ForeignKeyReferenceColumnId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // ApiDiagram → User
+            //
+            // API DIAGRAM
+            //
+            modelBuilder.Entity<ApiDiagram>()
+                .HasOne(a => a.Project)
+                .WithMany(p => p.ApiDiagrams)
+                .HasForeignKey(a => a.ProjectId)
+                .OnDelete(DeleteBehavior.Cascade);
+
             modelBuilder.Entity<ApiDiagram>()
                 .HasOne(a => a.User)
                 .WithMany()
@@ -169,14 +180,17 @@ namespace GizmoGrid._01.Data
                 .HasForeignKey(e => e.TargetId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            //
+            // PROJECT ACCESS & MEMBER
+            //
             modelBuilder.Entity<ProjectMember>()
-    .HasKey(pm => new { pm.ProjectId, pm.UserId });
+                .HasKey(pm => new { pm.ProjectId, pm.UserId });
 
             modelBuilder.Entity<ProjectAccess>()
-    .HasOne(pa => pa.User)
-    .WithMany(u => u.ProjectAccesses)
-    .HasForeignKey(pa => pa.UserId)
-    .OnDelete(DeleteBehavior.Restrict);
+                .HasOne(pa => pa.User)
+                .WithMany(u => u.ProjectAccesses)
+                .HasForeignKey(pa => pa.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<ProjectAccess>()
                 .HasOne(pa => pa.Project)
@@ -184,7 +198,6 @@ namespace GizmoGrid._01.Data
                 .HasForeignKey(pa => pa.ProjectId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            // Add for ProjectMember
             modelBuilder.Entity<ProjectMember>()
                 .HasOne(pm => pm.User)
                 .WithMany(u => u.ProjectMembers)
@@ -197,5 +210,6 @@ namespace GizmoGrid._01.Data
                 .HasForeignKey(pm => pm.ProjectId)
                 .OnDelete(DeleteBehavior.Cascade);
         }
+
     }
 }

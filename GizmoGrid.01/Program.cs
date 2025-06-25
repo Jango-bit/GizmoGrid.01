@@ -41,7 +41,6 @@ builder.Services.AddScoped<IProjectInviteService, ProjectInviteService>();
 
 
 
-// Swagger with JWT Bearer auth config
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo

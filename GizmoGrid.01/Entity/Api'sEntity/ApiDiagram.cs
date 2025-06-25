@@ -11,7 +11,7 @@ namespace GizmoGrid._01.Entity.Api_sEntity
         public User User { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
-
+        public Project Project { get; set; }
         public List<ApiTableNodes> ApiTableNodes { get; set; } = new List<ApiTableNodes>();
         public ICollection<ApiEdges> ApiEdges { get; set; } = new List<ApiEdges>();
 
